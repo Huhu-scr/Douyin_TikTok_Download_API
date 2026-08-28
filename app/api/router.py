@@ -5,9 +5,13 @@ from app.api.endpoints import (
     douyin_web,
     bilibili_web,
     hybrid_parsing, ios_shortcut, download,
+    system,
 )
 
 router = APIRouter()
+
+# System routers (health check, cookie management)
+router.include_router(system.router, tags=["System"])
 
 # TikTok routers
 router.include_router(tiktok_web.router, prefix="/tiktok/web", tags=["TikTok-Web-API"])

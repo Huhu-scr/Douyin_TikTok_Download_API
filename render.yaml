@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: douyin-tiktok-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: WORKER_COOKIE_URL
+        value: https://your-worker.workers.dev
+    healthCheckPath: /health
