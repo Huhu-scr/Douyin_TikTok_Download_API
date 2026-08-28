@@ -1,0 +1,21 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# 密钥文件绝不进入镜像，密钥通过 API_ACCESS_KEY 环境变量注入
+# Never bake the key into the image; inject it via API_ACCESS_KEY
+access_key.txt
+.env
+.env.*
+*.pem
+*.key
+
+docs
+test
+tests
+*.md
