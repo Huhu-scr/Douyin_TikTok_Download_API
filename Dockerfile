@@ -19,8 +19,9 @@ RUN pip install -i https://mirrors.aliyun.com/pypi/simple/ -U pip \
 # 安装依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 确保启动脚本可执行
-RUN chmod +x start.sh
+# 暴露端口
+EXPOSE 8000
 
-# 设置容器启动命令
-CMD ["./start.sh"]
+# 直接使用 Python 启动，避免 shell 脚本问题
+# 如果设置了 WORKER_COOKIE_URL，先加载 Cookie
+CMD python load_cookies.py 2>/dev/null || true && python start.py
