@@ -11,10 +11,33 @@ import yaml
 
 router = APIRouter()
 
-# Load config
-config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config.yaml')
-with open(config_path, 'r', encoding='utf-8') as file:
-    config = yaml.safe_load(file)
+# Load config - try multiple paths
+config = None
+config_paths = [
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config.yaml'),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'config.yaml'),
+    '/app/config.yaml'
+]
+
+for config_path in config_paths:
+    if os.path.exists(config_path):
+        with open(config_path, 'r', encoding='utf-8') as file:
+            config = yaml.safe_load(file)
+        break
+
+# Fallback config if file not found
+if config is None:
+    config = {
+        'API': {
+            'Version': 'V4.1.2',
+            'Update_Time': '2026/08/28',
+            'Environment': 'Production',
+            'Download_Switch': True
+        },
+        'Web': {
+            'PyWebIO_Enable': True
+        }
+    }
 
 WORKER_COOKIE_URL = os.getenv('WORKER_COOKIE_URL', '')
 
