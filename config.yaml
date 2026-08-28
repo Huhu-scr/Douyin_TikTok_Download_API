@@ -42,6 +42,17 @@ API:
   Download_File_Prefix: "douyin.wtf_"    # Default download file prefix | 默认下载文件前缀
 
 
+# Auth | 连接密钥鉴权
+Auth:
+  Enable: true    # Require access key for every request | 所有请求都必须携带连接密钥
+
+  # 密钥格式: ak- 后跟32位十六进制字符 | Key format: ak- followed by 32 hex chars
+  # 读取优先级 | Resolution order: API_ACCESS_KEY env > Access_Key_File > Access_Key
+  # 推荐使用 Access_Key_File 或环境变量，避免密钥被提交到 git
+  Access_Key: ""
+  Access_Key_File: "access_key.txt"    # Relative to project root, gitignored
+
+
 # iOS Shortcut
 iOS_Shortcut:
   iOS_Shortcut_Version: 7.0

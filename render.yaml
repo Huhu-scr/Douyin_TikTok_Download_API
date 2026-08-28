@@ -9,4 +9,4 @@ services:
     envVars:
       - key: WORKER_COOKIE_URL
         value: https://your-worker.workers.dev
-    healthCheckPath: /health
+    healthCheckPath: /api/health

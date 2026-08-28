@@ -132,3 +132,6 @@ dmypy.json
 .idea
 /app/api/endpoints/download/
 /download/
+
+# API access key (never commit)
+access_key.txt

@@ -37,6 +37,7 @@
 import uvicorn
 from fastapi import FastAPI
 from app.api.router import router as api_router
+from app.api.auth import AccessKeyMiddleware, is_auth_enabled, load_access_key
 
 # PyWebIO APP
 from app.web.app import MainView
@@ -135,6 +136,14 @@ app = FastAPI(
     docs_url=docs_url,  # 文档路径
     redoc_url=redoc_url,  # redoc文档路径
 )
+
+# Access key authentication | 连接密钥鉴权
+# 启用后，除 /api/health 外的所有请求都必须携带正确的密钥
+if is_auth_enabled():
+    app.add_middleware(AccessKeyMiddleware)
+    if not load_access_key():
+        print('[WARN] Auth is enabled but no access key was found. '
+              'All requests will be rejected with 503.')
 
 # API router
 app.include_router(api_router, prefix="/api")
