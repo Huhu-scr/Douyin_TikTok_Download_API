@@ -1,0 +1,26 @@
+name = "douyin-api-manager"
+main = "worker.js"
+compatibility_date = "2026-08-28"
+
+# KV Namespace for storing cookies
+[[kv_namespaces]]
+binding = "COOKIES"
+id = "YOUR_KV_NAMESPACE_ID"  # 需要运行: wrangler kv:namespace create COOKIES
+
+# Cron Triggers - 每 10 分钟保活一次
+[triggers]
+crons = ["*/10 * * * *"]
+
+# 环境变量（通过 secrets 设置）
+# wrangler secret put UPDATE_SECRET
+# wrangler secret put RENDER_URL
+
+# 账户信息
+# account_id = "your_account_id"  # 可选，从 wrangler.toml 中获取
+
+# Workers 配置
+[build]
+command = ""
+
+# 兼容性标志
+[compatibility_flags]
