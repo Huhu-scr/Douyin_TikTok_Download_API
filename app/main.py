@@ -56,8 +56,9 @@ with open(config_path, 'r', encoding='utf-8') as file:
     config = yaml.safe_load(file)
 
 
-Host_IP = config['API']['Host_IP']
-Host_Port = config['API']['Host_Port']
+# Support Railway and other cloud platforms that use PORT environment variable
+Host_IP = os.getenv('HOST', config['API']['Host_IP'])
+Host_Port = int(os.getenv('PORT', config['API']['Host_Port']))
 
 # API Tags
 tags_metadata = [
