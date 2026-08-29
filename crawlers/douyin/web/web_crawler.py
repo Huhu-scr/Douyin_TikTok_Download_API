@@ -58,6 +58,7 @@ from crawlers.douyin.web.utils import (AwemeIdFetcher,  # Aweme ID获取
                                        WebCastIdFetcher,  # 直播ID获取
                                        extract_valid_urls  # URL提取
                                        )
+from crawlers.utils.cookie_provider import get_cookie  # 远端Cookie获取
 
 # 配置文件路径
 path = os.path.abspath(os.path.dirname(__file__))
@@ -69,15 +70,16 @@ with open(f"{path}/config.yaml", "r", encoding="utf-8") as f:
 
 class DouyinWebCrawler:
 
-    # 从配置文件中获取抖音的请求头
+    # 从配置文件中获取抖音的请求头（Cookie 优先从 Cloudflare Worker 拉取）
     async def get_douyin_headers(self):
         douyin_config = config["TokenManager"]["douyin"]
+        cookie = await get_cookie("douyin", fallback=douyin_config["headers"]["Cookie"])
         kwargs = {
             "headers": {
                 "Accept-Language": douyin_config["headers"]["Accept-Language"],
                 "User-Agent": douyin_config["headers"]["User-Agent"],
                 "Referer": douyin_config["headers"]["Referer"],
-                "Cookie": douyin_config["headers"]["Cookie"],
+                "Cookie": cookie,
             },
             "proxies": {"http://": douyin_config["proxies"]["http"], "https://": douyin_config["proxies"]["https"]},
         }

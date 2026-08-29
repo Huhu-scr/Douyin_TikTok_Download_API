@@ -2,24 +2,58 @@
 
 ## 📋 服务信息
 
-- **项目名称**: Douyin_TikTok_Download_API
-- **Railway 项目**: celebrated-flexibility
+- **服务名称**: Douyin_TikTok_Download_API
+- **服务 URL**: https://celebrated-flexibility-production-2269.up.railway.app
 - **项目 ID**: fa8c12cd-feba-4287-99ff-5b9698f45be2
 - **部署环境**: Production
 - **API 版本**: V4.1.2
+- **鉴权状态**: ✅ 已启用
+
+---
+
+## 🔐 访问鉴权
+
+**所有接口都需要携带访问密钥**，除了 `/api/health`（健康检查）。
+
+### 密钥传递方式
+
+```bash
+# 方式 1: X-API-Key 请求头（推荐）
+curl -H "X-API-Key: ak-your-key-here" "https://..."
+
+# 方式 2: Authorization Bearer
+curl -H "Authorization: Bearer ak-your-key-here" "https://..."
+
+# 方式 3: 查询参数（浏览器场景）
+https://...?key=ak-your-key-here
+```
+
+### 获取密钥
+
+```bash
+# 方式 1: 查看密钥文件
+cat access_key.txt
+
+# 方式 2: 使用生成脚本
+python generate_access_key.py --show-only
+```
+
+### 错误响应
+
+```json
+// 401 - 缺少密钥
+{"code":401,"detail":"Missing access key. 请通过请求头 X-API-Key、Authorization: Bearer <key> 或查询参数 ?key= 提供连接密钥。"}
+
+// 403 - 密钥错误
+{"code":403,"detail":"Invalid access key. 连接密钥无效。"}
+```
 
 ---
 
 ## 🌐 基础 URL
 
-部署完成后，你的服务 URL 将类似于：
 ```
-https://celebrated-flexibility-production.up.railway.app
-```
-
-获取 URL：
-```bash
-railway domain
+https://celebrated-flexibility-production-2269.up.railway.app
 ```
 
 ---
@@ -42,11 +76,11 @@ railway domain
 
 ### 1. 健康检查（保活接口）
 
-用于 Cloudflare Worker 定时 ping，防止服务休眠。
+用于 Cloudflare Worker 定时 ping，防止服务休眠。**该接口无需密钥**。
 
 **请求**：
 ```http
-GET /health
+GET /api/health
 ```
 
 **响应**：
@@ -68,11 +102,12 @@ GET /health
 
 ### 2. 系统状态
 
-获取服务的详细状态信息。
+获取服务的详细状态信息。**需要密钥**。
 
 **请求**：
 ```http
-GET /status
+GET /api/status
+X-API-Key: ak-your-key-here
 ```
 
 **响应**：

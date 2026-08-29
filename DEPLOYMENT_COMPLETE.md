@@ -3,14 +3,17 @@
 ## ✅ 部署信息
 
 ### Railway 服务
-- **项目名称**: celebrated-flexibility
+- **服务名称**: Douyin_TikTok_Download_API
 - **项目 ID**: `fa8c12cd-feba-4287-99ff-5b9698f45be2`
 - **环境**: production
 - **服务 URL**: `https://celebrated-flexibility-production-2269.up.railway.app`
 - **部署时间**: 2026-08-28
+- **鉴权状态**: ✅ 已启用访问密钥
+
+> 说明：服务名称已从 `celebrated-flexibility` 改为 `Douyin_TikTok_Download_API`。域名由 Railway 根据服务 ID 生成，与服务名无关，因此改名后 URL 保持不变。
 
 ### 项目地址
-- **本地路径**: `D:\cloudflareworker\want_to_study_api\Douyin_TikTok_Download_API`
+- **本地路径**: `D:\cloudflareworker\Douyin_TikTok_Download_API`
 - **GitHub**: https://github.com/Huhu-scr/Douyin_TikTok_Download_API
 
 ---
@@ -32,6 +35,42 @@
 - ✅ 提供 fallback 配置
 - ✅ 更加健壮的错误处理
 
+### 4. 访问密钥鉴权
+- ✅ 全局中间件拦截所有请求
+- ✅ 支持 X-API-Key / Bearer / ?key= 三种传递方式
+- ✅ `/api/health` 免鉴权（供 Worker 保活）
+- ✅ 密钥文件 `access_key.txt` 已加入 `.gitignore`
+
+---
+
+## 🔐 访问密钥配置
+
+### 生成并部署密钥
+
+```bash
+# 1. 生成密钥
+python generate_access_key.py
+
+# 2. 查看密钥
+cat access_key.txt
+
+# 3. 部署到 Railway
+railway variables --set "API_ACCESS_KEY=$(cat access_key.txt)" --service Douyin_TikTok_Download_API
+```
+
+### 使用密钥调用 API
+
+```bash
+export API_KEY="ak-your-key-here"
+API_URL="https://celebrated-flexibility-production-2269.up.railway.app"
+
+# 请求头方式（推荐）
+curl -H "X-API-Key: $API_KEY" "$API_URL/api/status"
+
+# 浏览器访问文档
+# $API_URL/docs?key=$API_KEY
+```
+
 ---
 
 ## 🎯 下一步：配置环境变量
@@ -40,24 +79,25 @@
 
 ```bash
 # 进入项目目录
-cd D:\cloudflareworker\want_to_study_api\Douyin_TikTok_Download_API
+cd D:\cloudflareworker\Douyin_TikTok_Download_API
 
 # 设置 Worker URL（等 Worker 部署后）
-railway variables set WORKER_COOKIE_URL=https://your-worker.workers.dev --service celebrated-flexibility
+railway variables set WORKER_COOKIE_URL=https://your-worker.workers.dev --service Douyin_TikTok_Download_API
 
 # 设置更新密钥
-railway variables set UPDATE_SECRET=your-secret-key-here --service celebrated-flexibility
+railway variables set UPDATE_SECRET=your-secret-key-here --service Douyin_TikTok_Download_API
 ```
 
 ### 方法 2: 通过 Dashboard
 
 1. 访问: https://railway.com/project/fa8c12cd-feba-4287-99ff-5b9698f45be2
-2. 选择服务: `celebrated-flexibility`
+2. 选择服务: `Douyin_TikTok_Download_API`
 3. 进入 **Variables** 标签
 4. 添加以下变量：
 
 | 变量名 | 值 | 说明 |
 |--------|-----|------|
+| `API_ACCESS_KEY` | `ak-{32位十六进制}` | **API 访问密钥（必需）** |
 | `WORKER_COOKIE_URL` | `https://your-worker.workers.dev` | Worker URL（待部署） |
 | `UPDATE_SECRET` | `your-strong-secret` | Cookie 更新密钥 |
 
@@ -68,8 +108,11 @@ railway variables set UPDATE_SECRET=your-secret-key-here --service celebrated-fl
 ### 等待部署完成后测试
 
 ```bash
-# 1. 健康检查
-curl https://celebrated-flexibility-production-2269.up.railway.app/health
+API_URL="https://celebrated-flexibility-production-2269.up.railway.app"
+API_KEY="ak-your-key-here"  # 替换为 access_key.txt 中的实际密钥
+
+# 1. 健康检查（无需密钥）
+curl "$API_URL/api/health"
 
 # 预期响应：
 # {
@@ -79,11 +122,15 @@ curl https://celebrated-flexibility-production-2269.up.railway.app/health
 #   "environment": "Production"
 # }
 
-# 2. 系统状态
-curl https://celebrated-flexibility-production-2269.up.railway.app/status
+# 2. 系统状态（需要密钥）
+curl -H "X-API-Key: $API_KEY" "$API_URL/api/status"
 
-# 3. API 文档
-open https://celebrated-flexibility-production-2269.up.railway.app/docs
+# 3. 验证鉴权生效（不带密钥应返回 401）
+curl -i "$API_URL/api/status"
+# 预期：HTTP/1.1 401 Unauthorized
+
+# 4. API 文档（浏览器访问，密钥走查询参数）
+# $API_URL/docs?key=$API_KEY
 ```
 
 ---

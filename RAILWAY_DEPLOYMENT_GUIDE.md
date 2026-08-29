@@ -2,10 +2,12 @@
 
 ## 🎯 部署概述
 
-- **项目名称**: celebrated-flexibility
+- **服务名称**: Douyin_TikTok_Download_API
 - **项目 ID**: fa8c12cd-feba-4287-99ff-5b9698f45be2
+- **服务 URL**: https://celebrated-flexibility-production-2269.up.railway.app
 - **区域**: us-west1
 - **配置**: 最低资源使用
+- **鉴权**: ✅ 已启用访问密钥
 
 ---
 
@@ -27,14 +29,49 @@
 
 ---
 
+## 🔐 配置访问密钥
+
+### 1. 生成密钥
+
+```bash
+# 在项目目录执行
+python generate_access_key.py
+
+# 查看密钥
+cat access_key.txt
+# 或
+python generate_access_key.py --show-only
+```
+
+### 2. 部署密钥到 Railway
+
+```bash
+# 方式 1: 从文件注入（推荐）
+railway variables --set "API_ACCESS_KEY=$(cat access_key.txt)" --service Douyin_TikTok_Download_API
+
+# 方式 2: 手动复制粘贴
+# 先查看密钥：cat access_key.txt
+# 然后执行：railway variables --set "API_ACCESS_KEY=ak-your-key-here" --service Douyin_TikTok_Download_API
+```
+
+### 3. 验证密钥配置
+
+```bash
+# 确认变量已设置（值会被隐藏）
+railway variables --service Douyin_TikTok_Download_API | grep API_ACCESS_KEY
+```
+
+---
+
 ## 🔧 配置环境变量
 
 部署完成后，设置以下环境变量：
 
 ```bash
 # 方法 1: 通过 CLI
-railway variables set WORKER_COOKIE_URL=https://your-worker.workers.dev
-railway variables set UPDATE_SECRET=your-secret-key-here
+railway variables set WORKER_COOKIE_URL=https://your-worker.workers.dev --service Douyin_TikTok_Download_API
+railway variables set UPDATE_SECRET=your-secret-key-here --service Douyin_TikTok_Download_API
+railway variables set API_ACCESS_KEY=ak-your-key-here --service Douyin_TikTok_Download_API
 
 # 方法 2: 通过 Dashboard
 # 访问 https://railway.com/project/fa8c12cd-feba-4287-99ff-5b9698f45be2
@@ -45,15 +82,26 @@ railway variables set UPDATE_SECRET=your-secret-key-here
 
 | 变量名 | 值 | 说明 |
 |--------|-----|------|
+| `API_ACCESS_KEY` | `ak-{32位十六进制}` | **API 访问密钥（必需）** |
 | `WORKER_COOKIE_URL` | `https://your-worker.workers.dev` | Worker URL |
 | `UPDATE_SECRET` | `your-secret-key` | Cookie 更新密钥 |
 | `PORT` | `8000` | 端口（Railway 自动设置） |
+
+**可选的环境变量**:
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `API_AUTH_ENABLE` | `true` | 强制开关鉴权（优先级最高） |
+| `API_ACCESS_KEY_FILE` | `access_key.txt` | 密钥文件路径 |
 
 ---
 
 ## 🚀 部署命令
 
 ```bash
+# 本地上传部署（会拉取最新代码）
+railway up --service Douyin_TikTok_Download_API
+
 # 查看状态
 railway status
 

@@ -42,6 +42,7 @@ import os  # 系统操作
 from crawlers.base_crawler import BaseCrawler
 from crawlers.tiktok.app.endpoints import TikTokAPIEndpoints
 from crawlers.utils.utils import model_to_query_string
+from crawlers.utils.cookie_provider import get_cookie  # 远端Cookie获取
 
 # 重试机制
 from tenacity import *
@@ -64,14 +65,15 @@ with open(f"{path}/config.yaml", "r", encoding="utf-8") as f:
 
 class TikTokAPPCrawler:
 
-    # 从配置文件中获取TikTok的请求头
+    # 从配置文件中获取TikTok的请求头（Cookie 优先从 Cloudflare Worker 拉取）
     async def get_tiktok_headers(self):
         tiktok_config = config["TokenManager"]["tiktok"]
+        cookie = await get_cookie("tiktok", fallback=tiktok_config["headers"]["Cookie"])
         kwargs = {
             "headers": {
                 "User-Agent": tiktok_config["headers"]["User-Agent"],
                 "Referer": tiktok_config["headers"]["Referer"],
-                "Cookie": tiktok_config["headers"]["Cookie"],
+                "Cookie": cookie,
                 "x-ladon": "Hello From Evil0ctal!",
             },
             "proxies": {"http://": tiktok_config["proxies"]["http"],

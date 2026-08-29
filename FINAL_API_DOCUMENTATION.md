@@ -4,20 +4,64 @@
 
 ### 服务信息
 - **状态**: ✅ 正常运行
-- **项目名称**: celebrated-flexibility
+- **服务名称**: Douyin_TikTok_Download_API
 - **服务 URL**: `https://celebrated-flexibility-production-2269.up.railway.app`
 - **API 版本**: V4.1.2
 - **部署时间**: 2026-08-28
 - **健康检查**: ✅ 通过
+- **鉴权状态**: ✅ 已启用
+
+### 🔐 访问密钥（重要）
+
+**所有接口都需要携带访问密钥**，除了 `/api/health`（健康检查）。
+
+#### 三种传递方式
+
+```bash
+# 方式 1: X-API-Key 请求头（推荐）
+curl -H "X-API-Key: ak-your-key-here" "https://celebrated-flexibility-production-2269.up.railway.app/api/status"
+
+# 方式 2: Authorization Bearer
+curl -H "Authorization: Bearer ak-your-key-here" "https://celebrated-flexibility-production-2269.up.railway.app/api/status"
+
+# 方式 3: 查询参数（浏览器场景，会自动写入 Cookie）
+https://celebrated-flexibility-production-2269.up.railway.app/docs?key=ak-your-key-here
+```
+
+#### 获取密钥
+
+密钥存储在项目根目录的 `access_key.txt` 文件中（该文件已被 `.gitignore` 排除，不会提交到仓库）。
+
+```bash
+# 查看密钥
+cat access_key.txt
+
+# 或使用生成脚本
+python generate_access_key.py --show-only
+```
+
+#### 错误响应
+
+```bash
+# 缺少密钥 → 401
+{"code":401,"detail":"Missing access key. 请通过请求头 X-API-Key、Authorization: Bearer <key> 或查询参数 ?key= 提供连接密钥。"}
+
+# 密钥错误 → 403
+{"code":403,"detail":"Invalid access key. 连接密钥无效。"}
+```
 
 ### 快速测试
+
 ```bash
-# 健康检查 - 已验证 ✅
+# 设置密钥（替换为你的实际密钥）
+export API_KEY="ak-your-key-here"
+
+# 健康检查 - 无需密钥 ✅
 curl https://celebrated-flexibility-production-2269.up.railway.app/api/health
 # 响应: {"status":"ok","timestamp":"2026-08-28T...","version":"V4.1.2","environment":"Demo"}
 
-# 系统状态 - 已验证 ✅
-curl https://celebrated-flexibility-production-2269.up.railway.app/api/status
+# 系统状态 - 需要密钥 ✅
+curl -H "X-API-Key: $API_KEY" https://celebrated-flexibility-production-2269.up.railway.app/api/status
 # 响应: {"api_version":"V4.1.2","worker_configured":false,...}
 ```
 
@@ -82,14 +126,17 @@ GET /api/hybrid/video_data?url={video_url}&minimal=false
 
 **示例**:
 ```bash
+# 设置密钥
+export API_KEY="ak-your-key-here"
+
 # 解析抖音视频
-curl "https://celebrated-flexibility-production-2269.up.railway.app/api/hybrid/video_data?url=https://v.douyin.com/iFhnojQT/"
+curl -H "X-API-Key: $API_KEY" "https://celebrated-flexibility-production-2269.up.railway.app/api/hybrid/video_data?url=https://v.douyin.com/iFhnojQT/"
 
 # 解析 TikTok 视频
-curl "https://celebrated-flexibility-production-2269.up.railway.app/api/hybrid/video_data?url=https://vm.tiktok.com/xxx/"
+curl -H "X-API-Key: $API_KEY" "https://celebrated-flexibility-production-2269.up.railway.app/api/hybrid/video_data?url=https://vm.tiktok.com/xxx/"
 
 # 解析 Bilibili 视频
-curl "https://celebrated-flexibility-production-2269.up.railway.app/api/hybrid/video_data?url=https://www.bilibili.com/video/BVxxx/"
+curl -H "X-API-Key: $API_KEY" "https://celebrated-flexibility-production-2269.up.railway.app/api/hybrid/video_data?url=https://www.bilibili.com/video/BVxxx/"
 ```
 
 ---
@@ -165,11 +212,14 @@ GET /api/download?url={video_url}&prefix=true&with_watermark=false
 
 **示例**:
 ```bash
+# 设置密钥
+export API_KEY="ak-your-key-here"
+
 # 下载抖音视频
-curl -o video.mp4 "https://celebrated-flexibility-production-2269.up.railway.app/api/download?url=https://v.douyin.com/xxx"
+curl -H "X-API-Key: $API_KEY" -o video.mp4 "https://celebrated-flexibility-production-2269.up.railway.app/api/download?url=https://v.douyin.com/xxx"
 
 # 下载 TikTok 视频
-curl -o video.mp4 "https://celebrated-flexibility-production-2269.up.railway.app/api/download?url=https://vm.tiktok.com/xxx"
+curl -H "X-API-Key: $API_KEY" -o video.mp4 "https://celebrated-flexibility-production-2269.up.railway.app/api/download?url=https://vm.tiktok.com/xxx"
 ```
 
 ---
@@ -396,33 +446,34 @@ curl https://celebrated-flexibility-production-2269.up.railway.app/api/config/co
 ## 🧪 完整测试脚本
 
 ```bash
-# 设置基础 URL
+# 设置基础 URL 和密钥
 API_URL="https://celebrated-flexibility-production-2269.up.railway.app"
+API_KEY="ak-your-key-here"  # 替换为你的实际密钥
 
-# 1. 健康检查
+# 1. 健康检查（无需密钥）
 echo "=== 健康检查 ==="
 curl -s "$API_URL/api/health" | jq
 echo ""
 
-# 2. 系统状态
+# 2. 系统状态（需要密钥）
 echo "=== 系统状态 ==="
-curl -s "$API_URL/api/status" | jq
+curl -s -H "X-API-Key: $API_KEY" "$API_URL/api/status" | jq
 echo ""
 
-# 3. 解析抖音视频（需要有效链接）
+# 3. 解析抖音视频（需要有效链接和密钥）
 echo "=== 解析抖音视频 ==="
-curl -s "$API_URL/api/hybrid/video_data?url=https://v.douyin.com/iFhnojQT/" | jq '.code, .message'
+curl -s -H "X-API-Key: $API_KEY" "$API_URL/api/hybrid/video_data?url=https://v.douyin.com/iFhnojQT/" | jq '.code, .message'
 echo ""
 
-# 4. Cookie 配置状态
+# 4. Cookie 配置状态（需要密钥）
 echo "=== Cookie 配置 ==="
-curl -s "$API_URL/api/config/cookies"
+curl -s -H "X-API-Key: $API_KEY" "$API_URL/api/config/cookies"
 echo ""
 
-# 5. 访问 API 文档
+# 5. 访问 API 文档（浏览器访问，密钥通过查询参数传递）
 echo "=== API 文档 ==="
-echo "Swagger UI: $API_URL/docs"
-echo "ReDoc: $API_URL/redoc"
+echo "Swagger UI: $API_URL/docs?key=$API_KEY"
+echo "ReDoc: $API_URL/redoc?key=$API_KEY"
 ```
 
 ---

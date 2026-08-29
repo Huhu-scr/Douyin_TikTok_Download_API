@@ -42,6 +42,7 @@ import os  # 系统操作
 from crawlers.base_crawler import BaseCrawler
 from crawlers.tiktok.web.endpoints import TikTokAPIEndpoints
 from crawlers.utils.utils import extract_valid_urls
+from crawlers.utils.cookie_provider import get_cookie  # 远端Cookie获取
 
 # TikTok加密参数生成器
 from crawlers.tiktok.web.utils import (
@@ -80,14 +81,15 @@ class TikTokWebCrawler:
     def __init__(self):
         self.proxy_pool = None
 
-    # 从配置文件中获取TikTok的请求头
+    # 从配置文件中获取TikTok的请求头（Cookie 优先从 Cloudflare Worker 拉取）
     async def get_tiktok_headers(self):
         tiktok_config = config["TokenManager"]["tiktok"]
+        cookie = await get_cookie("tiktok", fallback=tiktok_config["headers"]["Cookie"])
         kwargs = {
             "headers": {
                 "User-Agent": tiktok_config["headers"]["User-Agent"],
                 "Referer": tiktok_config["headers"]["Referer"],
-                "Cookie": tiktok_config["headers"]["Cookie"],
+                "Cookie": cookie,
             },
             "proxies": {"http://": tiktok_config["proxies"]["http"],
                         "https://": tiktok_config["proxies"]["https"]}
