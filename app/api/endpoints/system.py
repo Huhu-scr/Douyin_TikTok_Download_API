@@ -9,6 +9,8 @@ import httpx
 from datetime import datetime
 import yaml
 
+from crawlers.utils import cookie_provider
+
 router = APIRouter()
 
 # Load config - try multiple paths
@@ -67,22 +69,14 @@ async def get_cookies_config():
     此接口从 Cloudflare Worker 获取最新的 Cookie
     This endpoint fetches latest cookies from Cloudflare Worker
     """
-    if not WORKER_COOKIE_URL:
+    if not cookie_provider.is_remote_enabled():
         raise HTTPException(
             status_code=500,
-            detail="WORKER_COOKIE_URL not configured"
+            detail="WORKER_COOKIE_URL / MEDIA_ACCESS_KEY not configured"
         )
 
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(f'{WORKER_COOKIE_URL}/config')
-            if response.status_code == 200:
-                return response.json()
-            else:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Failed to fetch cookies from worker: {response.text}"
-                )
+        return await cookie_provider.refresh()
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -114,26 +108,36 @@ async def update_cookie(
             detail="Invalid platform. Must be: douyin, tiktok, or bilibili"
         )
 
-    if not WORKER_COOKIE_URL:
+    if not cookie_provider.is_remote_enabled():
         raise HTTPException(
             status_code=500,
-            detail="WORKER_COOKIE_URL not configured"
+            detail="WORKER_COOKIE_URL / MEDIA_ACCESS_KEY not configured"
+        )
+
+    worker_token = os.getenv('WORKER_ADMIN_TOKEN', '')
+    if not worker_token:
+        raise HTTPException(
+            status_code=500,
+            detail="WORKER_ADMIN_TOKEN not configured (required to write cookies)"
         )
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.post(
-                f'{WORKER_COOKIE_URL}/cookie/{platform}',
-                headers={'Authorization': authorization},
-                content=cookie
+            response = await client.put(
+                cookie_provider.cookie_write_endpoint(platform),
+                headers={'Authorization': f'Bearer {worker_token}'},
+                json={'cookie': cookie}
             )
             if response.status_code == 200:
+                await cookie_provider.refresh()
                 return {"status": "success", "message": f"{platform} cookie updated"}
             else:
                 raise HTTPException(
                     status_code=response.status_code,
                     detail=f"Failed to update cookie: {response.text}"
                 )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,

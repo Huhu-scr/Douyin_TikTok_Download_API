@@ -21,10 +21,19 @@ COOKIE_TTL = int(os.getenv("COOKIE_TTL", "60"))
 _COOKIES_PATH = "/admin/api/media/cookies"
 
 
-def _cookies_endpoint() -> str:
+def cookies_endpoint() -> str:
+    """Worker 的 Cookie 端点。WORKER_COOKIE_URL 可填站点根或完整端点。"""
     if WORKER_COOKIE_URL.endswith(_COOKIES_PATH):
         return WORKER_COOKIE_URL
     return f"{WORKER_COOKIE_URL}{_COOKIES_PATH}"
+
+def cookie_write_endpoint(platform: str) -> str:
+    """Worker 的单平台 Cookie 写入端点（PUT，需管理员 token）。"""
+    root = WORKER_COOKIE_URL
+    if root.endswith(_COOKIES_PATH):
+        root = root[: -len(_COOKIES_PATH)]
+    return f"{root}/admin/api/media/cookie/{platform}"
+
 
 _cache = {}
 _cache_at = 0.0
@@ -36,7 +45,7 @@ def is_remote_enabled() -> bool:
 
 
 async def _fetch_remote() -> dict:
-    url = _cookies_endpoint()
+    url = cookies_endpoint()
     async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(url, headers={"X-Upstream-Key": MEDIA_ACCESS_KEY})
         response.raise_for_status()
